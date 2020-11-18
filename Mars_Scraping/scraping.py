@@ -100,6 +100,8 @@ def mars_facts():
         # Use 'read_html' to scrape the facts table into a dataframe
         df = pd.read_html('http://space-facts.com/mars/')[0]
 
+   
+
     except BaseException:
         return None
 
