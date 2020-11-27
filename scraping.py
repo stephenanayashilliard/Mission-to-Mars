@@ -7,6 +7,8 @@ from bs4 import BeautifulSoup as soup
 from webdriver_manager.chrome import ChromeDriverManager
 import pandas as pd
 import datetime as dt
+import time
+import html5lib
 
 # Set the executable path and initialize the chrome browser in splinter
 executable_path = {'executable_path': ChromeDriverManager().install()}
@@ -27,13 +29,13 @@ def scrape_all():
         "news_paragraph": news_paragraph,
         "featured_image": featured_image(browser),
         "facts": mars_facts(),
-        "last_modified": dt.datetime.now()
+        "last_modified": dt.datetime.now(),
+        "hemispheres": scrape_hemi(browser)
     }
 
     # Stop webdriver and return data
     browser.quit()
     return data
-
 
 def mars_news(browser):
 
@@ -111,6 +113,45 @@ def mars_facts():
 
     # Convert dataframe into HTML format, add bootstrap
     return df.to_html(classes="table table-striped")
+
+def scrape_hemi(browser): 
+
+ # # D1: Scrape High-Resolution Mars’ Hemisphere Images and Titles
+# ### Hemispheres
+
+# 1. Use browser to visit the URL 
+url = 'https://astrogeology.usgs.gov/search/results?q=hemisphere+enhanced&k1=target&v1=Mars'
+browser.visit(url)
+time.sleep(2)
+
+# Parse the resulting html with soup
+html=browser.html
+soup1=soup(html,'html.parser')
+
+# Use parent element to find where image url is located.
+hemisphere=soup1.find_all('div', class_='item')
+hemisphere
+
+# 2. Create a list to hold the images and titles.
+hemisphere_image_urls = []
+
+# 3. Write code to retrieve the image urls and titles for each hemisphere.
+for hemi in hemisphere: 
+    title = hemi.h3.text
+    browser.click_link_by_partial_text(title)
+    time.sleep(2)
+    html=browser.html
+    soup1=soup(html,'html.parser')
+    imageurl=soup1.find('div', class_='downloads').find('a')['href']
+    data={'img-url': imageurl, 'title':title}
+    hemisphere_image_urls.append(data)
+    browser.back()
+
+# 4. Print the list that holds the dictionary of each image url and title.
+hemisphere_image_urls
+
+# 5. Quit the browser
+browser.quit()
 
 if __name__ == "__main__":
 
